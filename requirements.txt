@@ -1,3 +1,4 @@
+-e .
 streamlit
 pydantic[email]
 streamlit-cookies-controller

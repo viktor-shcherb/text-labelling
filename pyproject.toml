@@ -11,3 +11,7 @@ dependencies = [
     "GitPython>=3.1",
     "platformdirs"
 ]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["label_app"]
