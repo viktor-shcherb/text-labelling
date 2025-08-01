@@ -6,22 +6,34 @@ from label_app.ui.components.auth import get_auth_service, set_login
 
 auth = get_auth_service()
 
-with st.form(key="login_modal", clear_on_submit=False, width="stretch"):
-    st.header("Login")
-    st.caption("Use one of the methods below to access the app.")
+params = st.query_params
+provider = params.get("provider")
+code = params.get("code")
+if provider and code:
+    set_login(auth.login_with_oauth(provider, code))
+    st.query_params.clear()
+    st.rerun()
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.form_submit_button("Login with GitHub", use_container_width=True):
-            set_login(auth.login_with_oauth("github"))
-            st.rerun()
-    with col2:
-        if st.form_submit_button("Login with Google", use_container_width=True):
-            set_login(auth.login_with_oauth("google"))
-            st.rerun()
+st.header("Login")
+st.caption("Use one of the methods below to access the app.")
 
-    st.markdown("---")
+col1, col2 = st.columns(2)
+with col1:
+    st.link_button(
+        "Login with GitHub",
+        auth.get_authorize_url("github"),
+        use_container_width=True,
+    )
+with col2:
+    st.link_button(
+        "Login with Google",
+        auth.get_authorize_url("google"),
+        use_container_width=True,
+    )
 
+st.markdown("---")
+
+with st.form(key="key_login", clear_on_submit=False):
     access_key = st.text_input(
         "Access key",
         type="password",
