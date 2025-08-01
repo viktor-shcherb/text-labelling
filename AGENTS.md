@@ -33,3 +33,4 @@
 | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | Initial creation of `AGENTS.md` with core instructions, lookup map, and history guidelines. | Provide a living reference for agent developers and ensure doc/code parity. |
 | Added project skeleton under `src/label_app/` with Streamlit stubs and config files. | Establish deployable base for future feature work. |
+| Documented preference for Material icons and replaced emoji page icon. | Align UI with design guidelines. |

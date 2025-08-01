@@ -87,6 +87,7 @@ my_label_app/
 * **Header row** – page title via `st.header`, optionally a progress badge.
 * **Main pane** – task‑specific content rendered by a `*_view` component.
 * **Action bar** – sticky container at the bottom with **Save  · Prev  · Next**; implemented once in `ui/components/nav_row.py` and reused.
+* **Icons** – prefer Google Material icons over emoji in page and button chrome.
 
 | Page file              | Route label        | Purpose                                                                                                                                                                                                        | Main widgets                                                                                  | Sidebar widgets            |
 | ---------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------- |
