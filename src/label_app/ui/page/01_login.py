@@ -65,6 +65,7 @@ with st.container(border=True):
     with st.form(key="key_login", clear_on_submit=False, border=True, enter_to_submit=False):
         access_key = st.text_input(
             "Access key",
+            key="access_key_as_password",
             type="password",
             help=f"Ask the administrator for your key: {get_settings().admin_email}",
         )
