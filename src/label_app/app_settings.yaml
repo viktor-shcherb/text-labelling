@@ -5,3 +5,4 @@ public_keys:
 
 projects:
   test: https://github.com/viktor-shcherb/test-dataset/tree/master/test_project
+  also_test: https://github.com/viktor-shcherb/test-dataset/tree/master/another_project

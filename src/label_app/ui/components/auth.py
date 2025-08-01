@@ -48,6 +48,11 @@ def is_logged_in() -> bool:
     return st.session_state.get("user") is not None
 
 
+def log_out() -> None:
+    remove_cookie("session")
+    del st.session_state["user"]
+
+
 def sidebar_logout(label: str = "Logout") -> None:
     """Add a small *Logout* button to the sidebar (visible when logged‑in)."""
 
@@ -55,7 +60,4 @@ def sidebar_logout(label: str = "Logout") -> None:
     if not st.session_state.get("user"):
         return  # nothing to show
 
-    if st.sidebar.button(label, use_container_width=True):
-        remove_cookie("session")
-        del st.session_state["user"]
-        st.rerun()
+    st.sidebar.button(label, use_container_width=True, on_click=log_out)

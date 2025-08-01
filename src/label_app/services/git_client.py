@@ -1,30 +1,48 @@
 from __future__ import annotations
 
 from pathlib import Path
+from platformdirs import user_cache_dir
 from urllib.parse import urlparse
 
 import streamlit as st
 from git import Repo
 
-CACHE_DIR = Path.home() / ".cache" / "label_app" / "repos"
+
+APP = "label_app"
+CACHE_DIR = Path(user_cache_dir(APP)) / "repos"
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def _repo_dest(url: str) -> Path:
-    """Return the filesystem path for the given Git *url*."""
+def _repo_dest(url: str, branch: str | None) -> Path:
     parts = urlparse(url)
-    owner, repo = Path(parts.path).parts[1:3]
-    dest = CACHE_DIR / owner / repo.replace('.git', '')
-    dest.parent.mkdir(parents=True, exist_ok=True)
+    owner, repo = Path(parts.path).with_suffix("").parts[1:3]   # strip .git
+    suffix = branch or "default"
+    dest = CACHE_DIR / owner / f"{repo}_{suffix}"
+    dest.mkdir(parents=True, exist_ok=True)
     return dest
 
 
-@st.cache_resource()
-def clone_or_pull(url: str) -> Path:
-    """Clone *url* into the cache or pull the latest changes."""
-    dest = _repo_dest(url)
-    if dest.exists() and (dest / ".git").exists():
+@st.cache_resource(show_spinner=False)
+def clone_or_pull(url: str, branch: str | None = None) -> Path:
+    """
+    Ensure *url*@*branch* is available locally and up to date.
+    Returns the repo root Path.
+
+    Raises GitCommandError.
+
+    NB: callers should still `repo.git.checkout(branch)` if they need to
+    hop around after the clone, but for read-only operations the work-tree
+    is already on the correct branch.
+    """
+    dest = _repo_dest(url, branch)
+    if (dest / ".git").exists():
         repo = Repo(dest)
-        repo.remotes.origin.pull()
+        # fetch + fast-forward the target branch
+        repo.remotes.origin.fetch(prune=True)
+        if branch:
+            repo.git.checkout(branch)
+        repo.git.pull("--ff-only")
     else:
-        Repo.clone_from(url, dest)
+        Repo.clone_from(url, dest, branch=branch or None)
+
     return dest

@@ -8,5 +8,6 @@ dependencies = [
     "PyYAML",
     "PyJWT",
     "Authlib",
-    "GitPython>=3.1"
+    "GitPython>=3.1",
+    "platformdirs"
 ]
