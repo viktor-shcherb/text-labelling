@@ -6,5 +6,6 @@ dependencies = [
     "pydantic[email]",
     "streamlit-cookies-controller",
     "PyYAML",
-    "PyJWT"
+    "PyJWT",
+    "Authlib"
 ]

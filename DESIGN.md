@@ -126,11 +126,13 @@ def render_item(item: Item, project: Project) -> ItemAnnotation:
 
 ```python
 class AuthService:
+    def get_authorize_url(provider: Literal["github", "google"]) -> str: ...
     def login_with_oauth(provider: Literal["github", "google"], code: str) -> User: ...
     def login_with_key(key: str) -> User: ...  # constant‑time compare
 ```
 
 * **Security note** – keys are pre‑hashed with SHA‑256 and stored in `.streamlit/secrets.toml` as `KEY_SHA256 -> user_login` entries. No plain keys on disk.
+* OAuth client IDs and secrets are also stored under `[oauth]` sections in `secrets.toml`.
 * The login screen is presented in a modal via `require_login()`; all pages call this helper so navigation is blocked until authentication succeeds. The access-key form hints to contact the admin using `Settings.admin_email`.
 
 ### 5.2 `services.projects`

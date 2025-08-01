@@ -19,7 +19,7 @@
 
 | Topic                          | Look in…                                |
 | ------------------------------ | --------------------------------------- |
-| Streamlit page flow            | `src/label_app/ui/pages/`               |
+| Streamlit page flow            | `src/label_app/ui/page/`                |
 | Task‑type renderers            | `src/label_app/ui/components/*_view.py` |
 | Domain services (Git, auth, …) | `src/label_app/services/`               |
 | Data models & item schemas     | `src/label_app/data/models.py`          |
@@ -35,3 +35,4 @@
 | Added project skeleton under `src/label_app/` with Streamlit stubs and config files. | Establish deployable base for future feature work. |
 | Documented preference for Material icons and replaced emoji page icon. | Align UI with design guidelines. |
 | Added login modal, key-based auth, and logout button. | Implement basic authentication flow. |
+| Implemented OAuth login for GitHub/Google; updated docs. | Enable real third-party login. |

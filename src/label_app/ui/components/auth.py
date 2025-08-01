@@ -11,7 +11,8 @@ from label_app.ui.components.cookies import get_cookie, put_cookie, remove_cooki
 def get_auth_service() -> AuthService:
     return AuthService(
         public_keys=get_settings().public_keys,
-        auth_secret=st.secrets.get("AUTH_SECRET")
+        auth_secret=st.secrets.get("AUTH_SECRET"),
+        oauth_cfg=st.secrets.get("oauth", {}),
     )
 
 
