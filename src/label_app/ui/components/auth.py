@@ -9,11 +9,16 @@ from label_app.ui.components.cookies import get_cookie, put_cookie, remove_cooki
 
 
 def get_auth_service() -> AuthService:
-    return AuthService(
-        public_keys=get_settings().public_keys,
-        auth_secret=st.secrets.get("AUTH_SECRET"),
-        oauth_cfg=st.secrets.get("oauth", {}),
-    )
+    if "auth_service" not in st.session_state:
+        auth_service = AuthService(
+            public_keys=get_settings().public_keys,
+            auth_secret=st.secrets.get("AUTH_SECRET"),
+            oauth_cfg=st.secrets.get("oauth", {}),
+            redirect_uri=st.secrets.get("REDIRECT_URI"),
+        )
+        st.session_state.auth_service = auth_service
+
+    return st.session_state.auth_service
 
 
 def sync_cookie_to_session() -> None:
@@ -41,15 +46,6 @@ def set_login(user: User) -> None:
 def is_logged_in() -> bool:
     sync_cookie_to_session()
     return st.session_state.get("user") is not None
-
-
-def require_login() -> None:
-    sync_cookie_to_session()
-
-    if is_logged_in():
-        return  # already authenticated
-
-    st.switch_page("page/01_login.py")
 
 
 def sidebar_logout(label: str = "Logout") -> None:
