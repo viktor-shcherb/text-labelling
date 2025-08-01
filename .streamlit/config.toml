@@ -4,3 +4,6 @@ fileWatcherType = "none"
 
 [theme]
 base = "light"
+
+[app]
+admin_email = "admin@example.com"
