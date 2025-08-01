@@ -229,8 +229,6 @@ Only **annotation files** live under `annotations/<login>`; source data is *neve
 # required
 name: "Support Chat Triage"
 task_type: chat            # one of: chat, classification, span, image_tagging, …
-source_dir: source
-annotations_dir: annotations
 
 # optional: UI + label specs
 label_groups:

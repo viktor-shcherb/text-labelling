@@ -15,6 +15,10 @@ class AppSettings(BaseModel):
         default_factory=dict,
         description="Mapping from username to their public key (SHA-256 of their private key)",
     )
+    projects: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Mapping from project slugs to project repositories",
+    )
 
     class Config:
         frozen = True  # make instances hashable & read-only
