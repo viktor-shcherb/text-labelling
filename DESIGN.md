@@ -131,6 +131,7 @@ class AuthService:
 ```
 
 * **Security note** – keys are pre‑hashed with SHA‑256 and stored in `.streamlit/secrets.toml` as `KEY_SHA256 -> user_login` entries. No plain keys on disk.
+* The login screen is presented in a modal via `require_login()`; all pages call this helper so navigation is blocked until authentication succeeds. The access-key form hints to contact the admin using `Settings.admin_email`.
 
 ### 5.2 `services.projects`
 
