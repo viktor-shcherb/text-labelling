@@ -1,0 +1,6 @@
+[server]
+headless = true
+fileWatcherType = "none"
+
+[theme]
+base = "light"
