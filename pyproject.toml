@@ -7,5 +7,6 @@ dependencies = [
     "streamlit-cookies-controller",
     "PyYAML",
     "PyJWT",
-    "Authlib"
+    "Authlib",
+    "GitPython>=3.1"
 ]
