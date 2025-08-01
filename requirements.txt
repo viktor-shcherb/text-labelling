@@ -4,3 +4,4 @@ streamlit-cookies-controller
 PyYAML
 PyJWT
 Authlib
+GitPython>=3.1
