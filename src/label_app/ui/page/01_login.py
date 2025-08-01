@@ -58,8 +58,8 @@ with st.container(border=True):
         if st.button("Login with GitHub", use_container_width=True):
             login_choice = "github"
     with col2:
-        if st.button("Login with Google", use_container_width=True, disabled=True,
-                     help="Login with Google is under renovation"):
+        if st.button("Login with Google", use_container_width=True):
+            # disabled=True, help="Login with Google is under renovation"):
             login_choice = "google"
 
     with st.form(key="key_login", clear_on_submit=False, border=True, enter_to_submit=False):
