@@ -36,3 +36,4 @@
 | Documented preference for Material icons and replaced emoji page icon. | Align UI with design guidelines. |
 | Added login modal, key-based auth, and logout button. | Implement basic authentication flow. |
 | Implemented OAuth login for GitHub/Google; updated docs. | Enable real third-party login. |
+| Documented `secrets.toml` layout in README. | Clarify required config. |
