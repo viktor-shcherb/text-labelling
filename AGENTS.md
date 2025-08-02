@@ -38,3 +38,4 @@
 | Implemented OAuth login for GitHub/Google; updated docs. | Enable real third-party login. |
 | Documented `secrets.toml` layout in README. | Clarify required config. |
 | Implemented project selection with repo cloning & YAML meta. | Enables annotators to choose versioned projects from settings. |
+| Store annotations under `annotation/<login>` on the project branch. | Align annotation storage with repository layout and avoid per-user Git branches. |
