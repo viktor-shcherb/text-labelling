@@ -140,25 +140,25 @@ class AuthService:
 * Clone/pull each *project repo* into `~/.cache/label_app/repos/<org>/<repo>`.
 * **Discover versions**: every top‑level directory name (e.g. `v1`, `2025‑07‑release`) is treated as a version. A dropdown in the Project‑Select page lets the annotator pick which version they want.
 * Parse **`<version>/project.yaml`** (see §6) → `Project` model.
-* Expose the version’s *source* tree and compute the per‑user annotation path: `<version>/annotations/<login>/…`.
+* Expose the version’s *source* tree and compute the per‑user annotation path: `<version>/annotation/<login>/…`.
 * Provide helpers `list_versions(repo) -> list[str]` and `get_current(project, version)` that downstream UI can call.
 
 ### 5.3 `services.annotations`
 
 * `load_item(project: Project, rel_path: str) -> Item`  (pulls the raw content line from the source JSONL).
 
-* `save_annotation(user: User, item_id: str, annotation: ItemAnnotation)`  (writes JSON with annotation only—**not** the original content) under `<version>/annotations/<login>/<rel_path>`.
+* `save_annotation(user: User, item_id: str, annotation: ItemAnnotation)`  (writes JSON with annotation only—**not** the original content) under `<version>/annotation/<login>/<rel_path>`.
 
-* Auto‑commit & push on save. Save on button click and each 5 minutes if there are any unsaved changes. Uses a branch `annotations/<login>` to avoid merge fights.
+* Auto‑commit & push on save. Save on button click and each 5 minutes if there are any unsaved changes. Commits go to the project's source branch; per‑user directories keep work isolated.
 
 * **Schema separation**: `Item` holds immutable source content; `ItemAnnotation` holds user metadata (`labels`, `free_text`, etc.). The two share a stable `id` key so they can be joined downstream.
   `services.annotations`
 
 * `load_item(project: Project, rel_path: str) -> ChatItem`  (pulls JSONL line).
 
-* `save_annotation(user: User, item: ChatItem, labels: dict[str, str])`  (writes JSONL with `{"id":…, "labels":…}`) under `annotations/<login>/<rel_path>`.
+* `save_annotation(user: User, item: ChatItem, labels: dict[str, str])`  (writes JSONL with `{"id":…, "labels":…}`) under `annotation/<login>/<rel_path>`.
 
-* Auto‑commit & push on save (configurable). Uses a branch `annotations/<login>` to avoid merge fights.
+* Auto‑commit & push on save (configurable). Commits land on the same branch as the project's source.
 
 ### 5.4 `ui.pages.03_annotate`
 
@@ -218,12 +218,12 @@ class ChatAnnotation(ItemAnnotation):
 └─ <version>/               # e.g. v1, v2, 2025‑07‑release
    ├─ project.yaml          # task definition for THAT version
    ├─ source/               # arbitrary sub‑tree of *.jsonl, images, etc.
-   └─ annotations/          # created by the app on first save
+   └─ annotation/           # created by the app on first save
       └─ <login>/           # one folder per annotator
          └─ … (mirrors source tree) …
 ```
 
-Only **annotation files** live under `annotations/<login>`; source data is *never* copied there.
+Only **annotation files** live under `annotation/<login>`; source data is *never* copied there.
 
 ### 6.2 YAML Schema (`<version>/project.yaml`)
 
@@ -259,7 +259,7 @@ Key points:
 | **Screen layout**    | Vertically scrollable chat  column (`ChatView` component). Under each message, `LabelPills` renders the label groups that apply to that role. Long messages are "shortened": only the first 200 and the last 100 characters are shown. The option to view the full message is provided to the user  |
 | **Controls**         | Sticky action bar with **Prev / Next / Save** ; dirty‑state warning on unload.                                                                                                                                                                                                                      |
 | **State keys**       | `current_item_idx`, `labels` (`dict[str,str]`), `dirty`.                                                                                                                                                                                                                                            |
-| **Save behaviour**   | Writes `ChatAnnotation` JSON under `<version>/annotations/<login>/<rel_path>`; commits to branch `annotations/<login>`.                                                                                                                                                                             |
+| **Save behaviour**   | Writes `ChatAnnotation` JSON under `<version>/annotation/<login>/<rel_path>`; commits to the project's source branch.                                                                                                                                                                             |
 |                      |                                                                                                                                                                                                                                                                                                     |
 
 ---
