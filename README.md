@@ -1,4 +1,6 @@
-# text-labelling
+# Text Labelling App
+
+<img width="2043" height="738" alt="banner_text_labelling (1)" src="https://github.com/user-attachments/assets/74556a50-e609-4186-b31e-bd149b1e940a" />
 
 Streamlit-powered collaborative text-labeling tool with Git-backed projects, versioned YAML configs, and pluggable task UIs.
 
