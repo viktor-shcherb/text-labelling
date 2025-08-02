@@ -8,11 +8,7 @@ with st.container(border=True):
     st.header("Login")
     st.caption("Use one of the methods below to access the app.")
 
-    c1, c2 = st.columns(2)
-    c1.button("Log in with GitHub", use_container_width=True,
-              on_click=lambda: st.login("github"))
-    c2.button("Log in with Google", use_container_width=True,
-              on_click=lambda: st.login("google"))
+    st.button("Log in with Auth0", use_container_width=True, on_click=lambda: st.login("auth0"))
 
     with st.form(key="key_login", clear_on_submit=False, border=True, enter_to_submit=False):
         access_key = st.text_input(
