@@ -1,63 +1,58 @@
-from __future__ import annotations
-
 import streamlit as st
-
 from label_app.config.settings import get_settings
-from label_app.data.models import User
-from label_app.services.auth import AuthService
-from label_app.ui.components.cookies import get_cookie, put_cookie, remove_cookie
+from label_app.services.key_auth import KeyAuth, COOKIE_NAME
+from label_app.ui.components.cookies import put_cookie, get_cookie, remove_cookie
 
 
-def get_auth_service() -> AuthService:
-    if "auth_service" not in st.session_state:
-        auth_service = AuthService(
+def key_auth() -> KeyAuth:
+    if "key_auth" not in st.session_state:
+        st.session_state.key_auth = KeyAuth(
             public_keys=get_settings().public_keys,
-            auth_secret=st.secrets.get("AUTH_SECRET"),
-            oauth_cfg=st.secrets.get("oauth", {}),
-            redirect_uri=st.secrets.get("REDIRECT_URI"),
+            secret=st.secrets["AUTH_SECRET"],
         )
-        st.session_state.auth_service = auth_service
-
-    return st.session_state.auth_service
+    return st.session_state.key_auth
 
 
-def sync_cookie_to_session() -> None:
-    """If a valid JWT cookie exists, ensure *session_state["user"]* is set."""
-    if "user" in st.session_state:
+def set_key_user(user):
+    st.session_state.key_user = user
+    token = key_auth().issue_cookie(user)
+    put_cookie(COOKIE_NAME, token)
+
+
+def _sync_cookie():
+    if "key_user" in st.session_state:
         return
-
-    token = get_cookie("session")
-    if not token:
-        return
-
-    user = get_auth_service().read_token(token)
-    if user:
-        st.session_state.user = user
+    token = get_cookie(COOKIE_NAME)
+    if token:
+        user = key_auth().read_cookie(token)
+        if user:
+            st.session_state.key_user = user
 
 
-def set_login(user: User) -> None:
-    """Persist *user* both in session_state and cookie."""
-    st.session_state.user = user
+def current_user():
+    # 1) Auth0 / social
+    if st.user.is_logged_in:
+        return st.user
 
-    token = get_auth_service().issue_token(user)
-    put_cookie("session", token)
-
-
-def is_logged_in() -> bool:
-    sync_cookie_to_session()
-    return st.session_state.get("user") is not None
+    # 2) Access-key
+    _sync_cookie()
+    return st.session_state.get("key_user")
 
 
-def log_out() -> None:
-    remove_cookie("session")
-    del st.session_state["user"]
+def is_logged_in():
+    return current_user() is not None
 
 
-def sidebar_logout(label: str = "Logout") -> None:
-    """Add a small *Logout* button to the sidebar (visible when logged‑in)."""
+def log_out_all():
+    # Key-login
+    remove_cookie(COOKIE_NAME)
+    st.session_state.pop("key_user", None)
+    # Social
+    st.logout()
 
-    sync_cookie_to_session()
-    if not st.session_state.get("user"):
+
+def sidebar_logout():
+    if not is_logged_in():
         return  # nothing to show
 
-    st.sidebar.button(label, use_container_width=True, on_click=log_out)
+    st.sidebar.button("Log out", use_container_width=True, on_click=log_out_all)

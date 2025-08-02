@@ -32,8 +32,11 @@ def put_cookie(
 
 
 def remove_cookie(name: str) -> None:
-    return controller.remove(
-        name,
-        secure=True,
-        same_site="strict",
-    )
+    try:
+        controller.remove(
+            name,
+            secure=True,
+            same_site="strict",
+        )
+    except KeyError:
+        pass
