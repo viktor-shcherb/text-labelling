@@ -14,4 +14,7 @@ dependencies = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["label_app"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["label_app*"]

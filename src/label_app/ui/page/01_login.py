@@ -4,7 +4,6 @@ from label_app.config.settings import get_settings
 from label_app.ui.components.auth import set_key_user, key_auth
 
 
-
 with st.container(border=True):
     st.header("Login")
     st.caption("Use one of the methods below to access the app.")
