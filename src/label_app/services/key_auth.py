@@ -1,4 +1,3 @@
-# label_app/services/key_auth.py
 import base64, hashlib, hmac, datetime as dt
 from typing import Optional
 
@@ -29,15 +28,15 @@ class KeyAuth:
     # ---------- login / cookie ----------
     def try_login(self, key: str) -> Optional[User]:
         dig = _hash(key)
-        for login, stored in self.pub.items():
+        for email, stored in self.pub.items():
             if hmac.compare_digest(dig, stored):
-                return User(login=login)
+                return User(email=email)
         return None
 
     def issue_cookie(self, user: User, days: int = DEFAULT_DAYS) -> str:
         now, exp = dt.datetime.utcnow(), dt.timedelta(days=days)
         payload = {
-            "sub": user.login,
+            "sub": user.email,
             "iat": int(now.timestamp()),
             "exp": int((now+exp).timestamp())
         }
@@ -50,4 +49,4 @@ class KeyAuth:
                               options={"require": ["sub", "exp"]})
         except jwt.ExpiredSignatureError | jwt.InvalidTokenError:
             return None
-        return User(login=data["sub"])
+        return User(email=data["sub"])

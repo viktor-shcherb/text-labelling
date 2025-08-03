@@ -1,25 +1,29 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Dict, List, Literal, Union
+from typing import Annotated, Literal, Union, Type, Mapping
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 
 class User(BaseModel):
-    login: str
+    email: EmailStr
+
+    model_config = dict(extra="forbid", frozen=True)  # help catch typos
 
 
 class LabelGroup(BaseModel):
     single_choice: bool = False
-    labels: List[str]
+    labels: list[str]
+
+    model_config = dict(extra="forbid", frozen=True)  # help catch typos
 
 
 class ProjectBase(BaseModel):
     # ── from project.yaml ───────────────────
     name: str
     description: str | None = None
-    task_type: str                           # discriminator
+    task_type: str  # discriminator
 
     # ── derived from repository ────────────
     version: str
@@ -28,19 +32,86 @@ class ProjectBase(BaseModel):
     repo_path: Path
     project_root: Path
 
-    model_config = dict(extra="forbid")      # help catch typos
+    model_config = dict(extra="forbid", frozen=True)  # help catch typos
+
+    @classmethod
+    def item_model(cls) -> Type[ItemBase]:
+        """Each concrete Project must return its dataset item model."""
+        raise NotImplementedError
+
+    @classmethod
+    def annotation_model(cls) -> Type[AnnotationBase]:
+        raise NotImplementedError
+
+
+class ItemBase(BaseModel):
+    # ── derived from JSONL file ────────────
+    # these are not saved on serialization
+    key: Path = Field(exclude=True, default=None)  # relative to project root
+    idx: int = Field(exclude=True, default=None)
+    # important for subclasses: always allow empty class instantiation (every new field has to have default)
+
+    @classmethod
+    def empty(cls, key: Path, idx: int) -> ItemBase:
+        return cls(key=key, idx=idx)
+
+
+class AnnotationBase(BaseModel):
+    # ── derived from item ────────────
+    # these are not saved on serialization
+    item: ItemBase = Field(exclude=True, default=None)  # relative to project root
+    # important for subclasses: always allow empty class instantiation (every new field has to have default)
+
+    @classmethod
+    def empty_for(cls, item: ItemBase) -> AnnotationBase:
+        return cls(item=item)
 
 
 # Chat ────────────────────────────────────
 
 class ChatOptions(BaseModel):
-    annotate_roles: List[str] = Field(default_factory=list, description="Roles to tag")
+    annotate_roles: tuple[str] = Field(default_factory=tuple, description="Roles to tag")
+
+    model_config = dict(extra="forbid", frozen=True)  # help catch typos
 
 
 class ChatProject(ProjectBase):
     task_type: Literal["chat"] = "chat"
     chat_options: ChatOptions = Field(default_factory=ChatOptions)
-    label_groups: Dict[str, LabelGroup]
+    label_groups: Mapping[str, LabelGroup]  # name to possible labels
+
+    model_config = dict(extra="forbid", frozen=True)  # help catch typos
+
+    @classmethod
+    def item_model(cls) -> Type[ItemBase]:
+        return ChatItem
+
+    @classmethod
+    def annotation_model(cls) -> Type[AnnotationBase]:
+        return ChatAnnotation
+
+    def __hash__(self) -> int:
+        return hash((self.version, self.slug))
+
+
+# ── Chat dataset ──────────────────────────────────────────
+class Message(BaseModel):
+    role: str
+    content: str
+
+
+class ChatItem(ItemBase):
+    messages: list[Message] = Field(default_factory=list)
+    model_config = dict(extra="forbid")
+
+
+class ChatAnnotation(AnnotationBase):
+    # label group selection per message
+    labels: list[dict[str, list[str]]] = Field(default_factory=list)  # name to selected labels
+
+    @classmethod
+    def empty_for(cls, item: ChatItem) -> ChatAnnotation:
+        return cls(item=item, labels=[{} for _ in item.messages])
 
 
 # ──────────────────────────────────────────
