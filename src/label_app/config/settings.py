@@ -28,7 +28,7 @@ APP_DIR: Path = Path("src/label_app")
 DEFAULT_SETTINGS_PATH: Path = APP_DIR / "app_settings.yaml"
 
 
-@st.cache_data()
+@st.cache_data(show_spinner=False, ttl="15m")
 def get_settings(path: Path | str = DEFAULT_SETTINGS_PATH) -> AppSettings:
     """Return a cached :class:`AppSettings` instance loaded from *path*.
 
