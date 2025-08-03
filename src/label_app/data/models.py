@@ -103,8 +103,13 @@ class Message(BaseModel):
 
 
 class ChatItem(ItemBase):
-    messages: list[Message] = Field(default_factory=list)
+    conversation: list[Message] = Field(default_factory=list)
     model_config = dict(extra="forbid")
+    language: str = None
+    model: str = None
+    timestamp: str = None
+    country: str = None
+    state: str = None
 
 
 class ChatAnnotation(AnnotationBase):
@@ -113,7 +118,7 @@ class ChatAnnotation(AnnotationBase):
 
     @classmethod
     def empty_for(cls, item: ChatItem) -> ChatAnnotation:
-        return cls(item=item, labels=[{} for _ in item.messages])
+        return cls(item=item, labels=[{} for _ in item.conversation])
 
 
 # ──────────────────────────────────────────
