@@ -4,7 +4,6 @@ version = "0.0.1"
 dependencies = [
     "streamlit>=1.35",
     "pydantic[email]",
-    "streamlit-cookies-controller",
     "PyYAML",
     "PyJWT",
     "Authlib",
@@ -14,7 +13,11 @@ dependencies = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["label_app*"]
+
+[tool.setuptools.package-data]
+"label_app.ui.components.cookie_ninja" = ["frontend/*"]

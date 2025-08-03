@@ -13,6 +13,7 @@ class User(BaseModel):
 
 
 class LabelGroup(BaseModel):
+    title: str = None
     single_choice: bool = False
     labels: list[str]
 
@@ -24,6 +25,7 @@ class ProjectBase(BaseModel):
     name: str
     description: str | None = None
     task_type: str  # discriminator
+    instructions: str | None = None
 
     # ── derived from repository ────────────
     version: str

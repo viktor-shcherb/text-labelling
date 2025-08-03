@@ -5,8 +5,7 @@ from typing import TypeVar, overload
 
 import streamlit as st
 
-from label_app.data.models import ChatItem, AnnotationBase, ItemBase, ChatAnnotation, Project, ChatProject
-from .label_pills import label_pills
+from label_app.data.models import AnnotationBase, ChatAnnotation, Project, ChatProject, LabelGroup
 
 
 _AnnotationType = TypeVar("_AnnotationType", bound=AnnotationBase)
@@ -75,15 +74,24 @@ def _render_chat(project: ChatProject, annotation: ChatAnnotation) -> ChatAnnota
 
             if msg.role in project.chat_options.annotate_roles:
                 cols = st.columns([1] * len(project.label_groups), gap="large")
-                for (lg_name, group), col in zip(project.label_groups.items(), cols):
-                    current = annotation.labels[idx].get(lg_name)
+
+                def handle_label_change(id_, slug):
+                    def callback():
+                        new_val = st.session_state[f"{id_}_{slug}"]
+                        annotation.labels[id_][slug] = new_val if isinstance(new_val, list) else [new_val]
+
+                    return callback
+
+                for (group_slug, group), col in zip(project.label_groups.items(), cols):
+                    group: LabelGroup
+                    current = annotation.labels[idx].get(group_slug)
                     with col:
-                        new_val = label_pills(
-                            lg_name,
-                            group,
-                            current,
-                            key=f"{idx}_{lg_name}",
+                        st.pills(
+                            group.title or group_slug, group.labels,
+                            selection_mode="single" if group.single_choice else "multi",
+                            key=f"{idx}_{group_slug}",
+                            on_change=handle_label_change(idx, group_slug),
+                            default=current,
+                            width="content"
                         )
-                    if new_val != current:
-                        annotation.labels[idx][lg_name] = new_val
     return annotation

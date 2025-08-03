@@ -46,7 +46,7 @@ from .errors import GitHubNotInstalledError, GitHubPermissionError
 # How long to accumulate new local commits before attempting a push
 DEBOUNCE_SECONDS: int = 300  # 5 minutes
 # How often the background worker scans the repo cache
-CHECK_INTERVAL_SECONDS: int = 300  # 5 minutes
+CHECK_INTERVAL_SECONDS: int = 30  # 2 times a minute
 
 # Per-repo lock to serialize work on a given checkout
 REPO_LOCKS: dict[Path, threading.Lock] = defaultdict(threading.Lock)
@@ -142,6 +142,7 @@ def scan_and_flush_all() -> None:
             continue
 
         for repo_dir in owner_dir.iterdir():
+            print(f"[flusher] Inspecting {repo_dir}")
             if not (repo_dir / ".git").exists():
                 continue
 
@@ -155,6 +156,7 @@ def scan_and_flush_all() -> None:
 
                 # 1) Commit only staged changes
                 created = commit_only_staged(repo)
+                print(f"[flusher] Commit creation OK: {created}")
 
                 # 2) Update debounce state and decide whether to push
                 now = time.time()
@@ -173,6 +175,7 @@ def scan_and_flush_all() -> None:
                 if should_push:
                     ok = push_current_branch_with_app(repo)
                     if ok:
+                        print(f"[flusher] Push OK: {repo_dir}]")
                         with PENDING_LOCK:
                             PENDING_SINCE.pop(repo_dir, None)
                             LAST_PUSH[repo_dir] = now
@@ -192,8 +195,11 @@ def flusher_loop(stop_event: threading.Event) -> None:
     Main loop: periodically scan for repos to flush until `stop_event` is set.
     """
     while not stop_event.is_set():
+        print(f"[flusher] Tick")
         scan_and_flush_all()
         stop_event.wait(CHECK_INTERVAL_SECONDS)
+
+    print(f"[flusher] Exit")
 
 
 def start_repo_flusher_core() -> threading.Event:
