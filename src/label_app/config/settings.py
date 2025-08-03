@@ -11,10 +11,6 @@ class AppSettings(BaseModel):
     """Strongly-typed application configuration."""
 
     admin_email: EmailStr = Field(..., description="Administrator contact email")
-    public_keys: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Mapping from username to their public key (SHA-256 of their private key)",
-    )
     projects: Dict[str, str] = Field(
         default_factory=dict,
         description="Mapping from project slugs to project repositories",

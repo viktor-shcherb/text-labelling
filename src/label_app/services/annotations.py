@@ -81,8 +81,10 @@ def load_file_annotations(
 ) -> list[_AnnotationType]:
 
     path = _annotation_path_for_key(project_root, user.email, rel_path)
+    print(f"[annotation] Loading {path}")
     if not path.exists():
         # create filler
+        print(f"[annotation] Path does not exist, creating empty annotations")
         return [annot_cls.empty_for(item) for item in items]
 
     adapter = TypeAdapter(annot_cls)
@@ -119,7 +121,7 @@ def save_annotations(project: Project, user: User, annotations: Iterable[Annotat
     """
     items = load_items_by_file(project)  # cached so cheap
     repo = Repo(project.repo_path)
-    worktree = Path(repo.working_tree_dir).resolve()
+    project_root = Path(project.project_root).resolve()
 
     # --- 0) Verify types and group by key --------------------------------------
     annot_cls: Type[AnnotationBase] = project.annotation_model()
@@ -136,7 +138,7 @@ def save_annotations(project: Project, user: User, annotations: Iterable[Annotat
         try:
             rel_key = Path(ann.item.key)  # should already be relative
             # Resolve a *candidate* on disk and ensure it stays inside the repo when rooted
-            (worktree / rel_key).resolve().relative_to(worktree)
+            (project_root / rel_key).resolve().relative_to(project_root)
         except Exception:
             raise ValueError(f"Annotation key must be a path relative to project root: {ann.item.key!r}")
 
@@ -154,7 +156,6 @@ def save_annotations(project: Project, user: User, annotations: Iterable[Annotat
             max_idx_by_key[rel_key] = ann.item.idx
 
     if not grouped:
-        st.info("No annotations to save.")
         return
 
     # --- For each key: read raw lines, apply diffs, write+stage only if changed --
@@ -165,8 +166,7 @@ def save_annotations(project: Project, user: User, annotations: Iterable[Annotat
     for key, new_anns in grouped.items():
         local_items = items[key]
 
-        ann_path = _annotation_path_for_key(worktree, user.email, key).resolve()
-        ann_path.relative_to(worktree)  # safety: must stay inside repo
+        ann_path = _annotation_path_for_key(project_root, user.email, key).resolve()
 
         # 1) Read existing JSONL as raw lines (or filler if missing)
         lines = read_annotations(annot_cls, ann_path, items=local_items)
@@ -190,19 +190,15 @@ def save_annotations(project: Project, user: User, annotations: Iterable[Annotat
         _atomic_write_lines(ann_path, lines)
 
         # 4) Stage the updated file
-        rel = str(ann_path.relative_to(worktree))
+        rel = str(ann_path.relative_to(repo.working_dir))
         repo.index.add([rel])
         staged_paths.append(rel)
         files_updated += 1
         rows_written_total += len(lines)
 
     if not staged_paths:
-        st.info("No changes to stage.")
         return
 
-    st.success(
-        f"Staged {files_updated} file{'s' if files_updated != 1 else ''} "
-        f"({rows_written_total} rows total). "
-        "Changes will be auto-committed and pushed by the background flusher."
-    )
+    print(f"[annotations] Staged {files_updated} file{'s' if files_updated != 1 else ''} "
+          f"({rows_written_total} rows total). ")
     st.session_state.last_save_ts = time.time()

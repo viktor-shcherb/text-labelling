@@ -60,6 +60,7 @@ def start_repo_flusher() -> threading.Event:
     The flusher periodically scans cached repos, commits **staged** changes only,
     and (debounced) pushes them using a GitHub App token.
     """
+    print("[flusher] Started")
     return start_repo_flusher_core()
 
 

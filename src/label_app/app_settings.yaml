@@ -1,11 +1,8 @@
 admin_email: viktoroo.sch@gmail.com
 
-public_keys:
-  viktoroo.sch@gmail.com: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
-
-projects:
-  test: https://github.com/viktor-shcherb/test-dataset/tree/master/test_project
-  also_test: https://github.com/viktor-shcherb/test-dataset/tree/master/another_project
-  semibroken_test: https://github.com/viktor-shcherb/test-dataset/tree/master/semibroken_project
-  broken_test: https://github.com/viktor-shcherb/test-dataset/tree/master/broken_project
-  private_test: https://github.com/viktor-shcherb/private-test-dataset/tree/master/project
+#projects:
+#  test: https://github.com/viktor-shcherb/test-dataset/tree/master/test_project
+#  also_test: https://github.com/viktor-shcherb/test-dataset/tree/master/another_project
+#  semibroken_test: https://github.com/viktor-shcherb/test-dataset/tree/master/semibroken_project
+#  broken_test: https://github.com/viktor-shcherb/test-dataset/tree/master/broken_project
+#  private_test: https://github.com/viktor-shcherb/private-test-dataset/tree/master/project
