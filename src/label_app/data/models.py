@@ -114,6 +114,7 @@ class ChatItem(ItemBase):
 
 class ChatAnnotation(AnnotationBase):
     # label group selection per message
+    item: ChatItem= Field(exclude=True, default=None)
     labels: list[dict[str, list[str]]] = Field(default_factory=list)  # name to selected labels
 
     @classmethod

@@ -60,7 +60,7 @@ def _render_chat(project: ChatProject, annotation: ChatAnnotation) -> ChatAnnota
 
     Returns the updated annotation.
     """
-    for idx, msg in enumerate(annotation.item.messages):
+    for idx, msg in enumerate(annotation.item.conversation):
         with st.container(border=True):
             st.markdown(f"**{msg.role}**")
             content = msg.content
