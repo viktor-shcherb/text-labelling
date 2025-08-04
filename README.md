@@ -2,7 +2,7 @@
 
 <img width="2043" height="738" alt="banner_text_labelling (1)" src="https://github.com/user-attachments/assets/74556a50-e609-4186-b31e-bd149b1e940a" />
 
-A collaborative, version-controlled annotation tool designed for easy deployment and customization. It provides out-of-the-box support for real-time multi-user labeling, project versioning, and seamless persistance to GitHub without additional infrastructure.
+A collaborative annotation tool designed for easy deployment and customization. It provides out-of-the-box support for real-time multi-user labeling, project versioning, and seamless persistance to GitHub without additional infrastructure.
 
 **Key Features:**
 
