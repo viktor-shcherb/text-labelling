@@ -67,10 +67,11 @@ def _require_github_app_secrets() -> dict:
     except Exception as exc:  # KeyError or Secrets backend issues
         raise RuntimeError(
             "Missing [github_app] section in Streamlit secrets. "
-            "Please define github_app.app_id, github_app.private_key_pem, and github_app.slug."
+            "Please define github_app.client_id, github_app.private_key_pem, github_app.slug "
+            "and github_app.commit_sign_id."
         ) from exc
 
-    missing = [k for k in ("app_id", "private_key_pem", "slug", "commit_sign_id") if k not in app_secrets]
+    missing = [k for k in ("client_id", "private_key_pem", "slug", "commit_sign_id") if k not in app_secrets]
     if missing:
         raise RuntimeError(
             "Missing required keys in [github_app] secrets: "
@@ -82,7 +83,7 @@ def _require_github_app_secrets() -> dict:
 _app = _require_github_app_secrets()
 
 # Note: coerce APP_ID to str because TOML/YAML may parse numeric ids as ints.
-APP_ID: str = str(_app["app_id"])
+CLIENT_ID: str = str(_app["client_id"])
 APP_PRIVATE_KEY: str = _app["private_key_pem"]
 APP_SLUG: str = _app["slug"]
 BOT_SIGN_ID: str = _app["commit_sign_id"]
@@ -95,7 +96,7 @@ __all__ = [
     "CACHE_DIR",
     "GH_API",
     "USER_AGENT",
-    "APP_ID",
+    "CLIENT_ID",
     "APP_PRIVATE_KEY",
     "APP_SLUG",
 ]

@@ -39,7 +39,7 @@ from typing import Any
 import jwt
 import requests
 
-from .config import APP_ID, APP_PRIVATE_KEY, USER_AGENT, GH_API
+from .config import CLIENT_ID, APP_PRIVATE_KEY, USER_AGENT, GH_API
 from .errors import GitHubNotInstalledError, GitHubPermissionError
 
 # --------------------------------------------------------------------------- #
@@ -85,7 +85,7 @@ def _make_app_jwt() -> str:
     payload = {
         "iat": now - _JWT_IAT_SKEW_SECONDS,
         "exp": now + _JWT_LIFETIME_SECONDS,
-        "iss": APP_ID,
+        "iss": CLIENT_ID,
     }
     return jwt.encode(payload, APP_PRIVATE_KEY, algorithm="RS256")
 
