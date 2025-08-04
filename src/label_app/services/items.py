@@ -30,6 +30,7 @@ def load_file_items(item_type: _ItemType, rel_path: Path, project_root: Path) ->
     items = []
 
     with path.open("rb") as f:
+        item_idx = 0
         for lineno, raw in enumerate(f):
             # Trim whitespace once, then handle blank/comment lines
             raw = raw.strip()
@@ -44,7 +45,9 @@ def load_file_items(item_type: _ItemType, rel_path: Path, project_root: Path) ->
                 item: _ItemType = adapter.validate_json(raw)
                 # attach derived (non-serialized) metadata
                 item.key = rel_path
-                item.idx = lineno
+                item.idx = item_idx
+                item_idx += 1
+
                 items.append(item)
             except ValidationError as e:
                 print(f"[load_file_items] {path}:{lineno}: {e}")

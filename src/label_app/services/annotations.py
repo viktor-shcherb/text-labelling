@@ -64,11 +64,16 @@ def _to_json(annotation: AnnotationBase) -> str:
 
 def read_annotations(annot_cls: Type[AnnotationBase], path: Path, items: list[ItemBase]) -> list[str]:
     """Read annotations as raw lines; strip newline terminators, keep content as-is."""
-    if not path.exists():
-        # create filler
-        return [_to_json(annot_cls.empty_for(item)) for item in items]
-    with path.open("r", encoding="utf-8-sig", newline="") as f:
-        return [ln.rstrip("\r\n") for ln in f]
+    if path.exists():
+        with path.open("r", encoding="utf-8-sig", newline="") as f:
+            result = [ln.rstrip("\r\n") for ln in f]
+
+        if len(result) == len(items):
+            return result
+        else:
+            print(f"[read_annotations] file {path} is broken! Returning empty annotations.")
+
+    return [_to_json(annot_cls.empty_for(item)) for item in items]
 
 
 _AnnotationType = TypeVar("_AnnotationType", bound=AnnotationBase)

@@ -105,11 +105,11 @@ class Message(BaseModel):
 class ChatItem(ItemBase):
     conversation: list[Message] = Field(default_factory=list)
     model_config = dict(extra="forbid")
-    language: str = None
-    model: str = None
-    timestamp: str = None
-    country: str = None
-    state: str = None
+    language: str | None = None
+    model: str | None = None
+    timestamp: str | None = None
+    country: str | None = None
+    state: str | None = None
 
 
 class ChatAnnotation(AnnotationBase):

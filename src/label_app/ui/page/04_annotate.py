@@ -40,13 +40,18 @@ else:
     annotation = file_annotations[item.idx]
     st.session_state.cached_annotation = annotation
 
+print(f"[annotate] {annotation.item.key}:{annotation.item.idx}")
+
 
 def progress(step: int):
     target_idx = min(len(items) - 1, max(current_idx + step, 0))
     if current_idx == target_idx:
         return
 
-    del st.session_state.cached_annotation
+    print(f"[annotate] current idx: {current_idx} -> {target_idx}")
+
+    if "cached_annotation" in st.session_state:
+        del st.session_state.cached_annotation
     set_current_item(project, target_idx)
     save_annotations(project, user, [annotation])
 
@@ -78,7 +83,24 @@ with controls:
             disabled=(current_idx == len(items) - 1)
         )
 
-st.progress((current_idx + 1) / len(items), text=f"Annotating {current_idx + 1} out of {len(items)}")
+
+def _on_slider_change():
+    # slider_idx is 1-based, your current_idx is 0-based
+    new_idx = st.session_state.slider_idx - 1
+    diff = new_idx - current_idx
+    if diff != 0:
+        progress(diff)
+
+
+st.slider(
+    f"Annotation progress:",
+    min_value=1,
+    max_value=len(items),
+    value=current_idx + 1,
+    key="slider_idx",
+    on_change=_on_slider_change,
+    help="Jump to annotation by sliding",
+)
 
 st.session_state.cached_annotation = render(project, annotation)
 save_annotations(project, user, [annotation])
