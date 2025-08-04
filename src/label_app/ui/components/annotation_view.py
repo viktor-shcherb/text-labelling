@@ -104,14 +104,14 @@ def _split_at_nearest_markdown_safe(s: str, limit: int = 200, lines_limit: int =
             cut = find_cut(line_target)
 
     # 6) Build preview/expanded halves
-    preview = s[:cut].rstrip() + "\n..."
+    preview = s[:cut].rstrip() + "\n  ..."
     expanded = s[cut:].lstrip()
 
     # 7) If preview ballooned to >200% of `limit`, retry at half limit once
     if len(preview) > 2 * limit:
         half = limit // 2
         cut2 = find_cut(half)
-        preview2 = s[:cut2].rstrip() + "\n..."
+        preview2 = s[:cut2].rstrip() + "\n  ..."
         if len(preview2) <= 2 * half:
             preview = preview2
             expanded = s[cut2:].lstrip()
