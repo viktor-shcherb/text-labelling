@@ -3,7 +3,7 @@ from __future__ import annotations
 import bisect
 import re
 from functools import singledispatch
-from typing import TypeVar, overload
+from typing import TypeVar, overload, Any
 
 import streamlit as st
 
@@ -84,10 +84,10 @@ def _split_at_nearest_markdown_safe(s: str, limit: int = 200, lines_limit: int =
         if idx > 0:
             candidates.append(pts[idx - 1])
         cut = min(candidates, key=lambda x: abs(x - target))
-        # If cut is inside a protected span, push it to the span’s end
+        # If cut is inside a protected span, push it to the span’s start
         for st, ed in spans:
             if st <= cut < ed:
-                cut = ed
+                cut = st
                 break
         return cut
 
@@ -119,14 +119,28 @@ def _split_at_nearest_markdown_safe(s: str, limit: int = 200, lines_limit: int =
     return preview, expanded
 
 
+def _fix_annotation(annotation: ChatAnnotation):
+    missing = len(annotation.item.conversation) - len(annotation.labels)
+    if missing > 0:
+        print(f"[render_chat] malformed annotation {annotation.item.key}:{annotation.item.idx}: "
+              f"not enough labels, {missing} missing")
+        annotation.labels.extend([{} for _ in range(missing)])
+    if missing < 0:
+        print(f"[render_chat] malformed annotation {annotation.item.key}:{annotation.item.idx}: "
+              f"too many labels, {-missing} extra")
+        annotation.labels = annotation.labels[:missing]
+
+
 @render.register
+@st.fragment()
 def _render_chat(project: ChatProject, annotation: ChatAnnotation) -> ChatAnnotation:
     """Display chat messages with annotation controls.
 
     Returns the updated annotation.
     """
+    _fix_annotation(annotation)
     for idx, msg in enumerate(annotation.item.conversation):
-        with st.container(border=True):
+        with st.container(border=True, key=f"container-msg-{idx}"):
             st.markdown(f"**{msg.role}**")
             content = msg.content
 
@@ -150,7 +164,8 @@ def _render_chat(project: ChatProject, annotation: ChatAnnotation) -> ChatAnnota
                 def handle_label_change(id_, slug):
                     def callback():
                         new_val = st.session_state[f"{id_}_{slug}"]
-                        annotation.labels[id_][slug] = new_val if isinstance(new_val, list) else [new_val]
+                        if new_val is not None:
+                            annotation.labels[id_][slug] = new_val if isinstance(new_val, list) else [new_val]
 
                     return callback
 
@@ -163,7 +178,7 @@ def _render_chat(project: ChatProject, annotation: ChatAnnotation) -> ChatAnnota
                             selection_mode="single" if group.single_choice else "multi",
                             key=f"{idx}_{group_slug}",
                             on_change=handle_label_change(idx, group_slug),
-                            default=current,
+                            default=current if current is not None else [],
                             width="content"
                         )
     return annotation

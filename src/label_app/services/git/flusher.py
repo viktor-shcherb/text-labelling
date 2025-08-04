@@ -38,7 +38,7 @@ from pathlib import Path
 
 from git import Repo, GitCommandError, Actor
 
-from .config import CACHE_DIR
+from .config import CACHE_DIR, BOT_NAME, BOT_EMAIL
 from .ops import with_authed_remote, canonical_repo_url, owner_repo_from_url
 from .auth import get_installation_token
 from .errors import GitHubNotInstalledError, GitHubPermissionError
@@ -80,7 +80,7 @@ def commit_only_staged(repo: Repo) -> bool:
     """
     if not has_staged_changes(repo):
         return False
-    author = Actor("label-app[bot]", "label-app[bot]@users.noreply.github.com")
+    author = Actor(BOT_NAME, BOT_EMAIL)
     repo.index.commit("Auto-commit (staged changes)", author=author, committer=author)
     return True
 
@@ -175,7 +175,7 @@ def scan_and_flush_all() -> None:
                 if should_push:
                     ok = push_current_branch_with_app(repo)
                     if ok:
-                        print(f"[flusher] Push OK: {repo_dir}]")
+                        print(f"[flusher] Push OK: {repo_dir}")
                         with PENDING_LOCK:
                             PENDING_SINCE.pop(repo_dir, None)
                             LAST_PUSH[repo_dir] = now

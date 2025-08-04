@@ -46,7 +46,6 @@ def get_annotations_page(*, default: bool = False):
 
 
 def get_active_pages() -> list[st.Page]:
-    print(is_logged_in(), is_project_selected())
     if not is_logged_in():
         # only allow login page
         return [

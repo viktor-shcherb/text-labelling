@@ -70,7 +70,7 @@ def _require_github_app_secrets() -> dict:
             "Please define github_app.app_id, github_app.private_key_pem, and github_app.slug."
         ) from exc
 
-    missing = [k for k in ("app_id", "private_key_pem", "slug") if k not in app_secrets]
+    missing = [k for k in ("app_id", "private_key_pem", "slug", "commit_sign_id") if k not in app_secrets]
     if missing:
         raise RuntimeError(
             "Missing required keys in [github_app] secrets: "
@@ -85,6 +85,10 @@ _app = _require_github_app_secrets()
 APP_ID: str = str(_app["app_id"])
 APP_PRIVATE_KEY: str = _app["private_key_pem"]
 APP_SLUG: str = _app["slug"]
+BOT_SIGN_ID: str = _app["commit_sign_id"]
+
+BOT_NAME = f"{APP_SLUG}[bot]"
+BOT_EMAIL = f"{BOT_SIGN_ID}+{BOT_NAME}@users.noreply.github.com"
 
 __all__ = [
     "APP",

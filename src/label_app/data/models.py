@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Annotated, Literal, Union, Type, Mapping
 
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, field_validator
 
 
 class User(BaseModel):
@@ -115,7 +115,23 @@ class ChatItem(ItemBase):
 class ChatAnnotation(AnnotationBase):
     # label group selection per message
     item: ChatItem= Field(exclude=True, default=None)
-    labels: list[dict[str, list[str]]] = Field(default_factory=list)  # name to selected labels
+    labels: list[dict[str, list[str | None] | None]] = Field(default_factory=list)  # name to selected labels
+
+    @field_validator("labels", mode="after")
+    def _normalize_labels(cls, labels):
+        cleaned = []
+        for entry in labels:
+            new_entry: dict[str, list[str] | None] = {}
+            for name, values in entry.items():
+                if values is None:
+                    # preserve a completely unset group as None
+                    new_entry[name] = None
+                else:
+                    # drop only the None-members from the list
+                    filtered = [v for v in values if v is not None]
+                    new_entry[name] = filtered
+            cleaned.append(new_entry)
+        return cleaned
 
     @classmethod
     def empty_for(cls, item: ChatItem) -> ChatAnnotation:
