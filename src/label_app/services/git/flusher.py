@@ -46,7 +46,7 @@ from .auth import get_installation_token
 from .errors import GitHubNotInstalledError, GitHubPermissionError
 
 # Minimum delay between pushes of the work branch when local commits exist
-PUSH_INTERVAL_SECONDS: int = 60
+PUSH_INTERVAL_SECONDS: int = 5 * 60
 # How long to wait without new commits before squashing into the target branch
 MERGE_IDLE_SECONDS: int = 3600  # 1 hour
 # Always merge at least once this often if there are commits pending
