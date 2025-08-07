@@ -99,4 +99,6 @@ __all__ = [
     "CLIENT_ID",
     "APP_PRIVATE_KEY",
     "APP_SLUG",
+    "BOT_NAME",
+    "BOT_EMAIL"
 ]
