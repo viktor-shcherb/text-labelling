@@ -239,8 +239,13 @@ class BranchTracker:
                 self.repo.git.checkout(self.staging_branch)
                 return
 
-            # Create staging branch from tracked branch's tip and switch to it
-            self.repo.create_head(self.staging_branch, self.tracking_branch)
+            remote_staging = getattr(self.repo.remotes.origin.refs, self.staging_branch, None)
+            if remote_staging is not None:
+                # use the remote version
+                self.repo.create_head(self.staging_branch, remote_staging)
+            else:
+                # everything failed: use tracking branch to create a new branch
+                self.repo.create_head(self.staging_branch, self.tracking_branch)
             self.repo.git.checkout(self.staging_branch)
 
             # Push it to the remote, so it exists in the future
