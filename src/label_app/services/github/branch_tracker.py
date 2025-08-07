@@ -64,16 +64,10 @@ class BranchTracker:
         self._token = None
         self._repo_status = None
         self._is_private = False
+        self._monitor_thread = None
         self.reset()
 
         print(f"{self.logging_prefix} Initialized")
-
-        # Start the background monitor
-        self._monitor_thread = threading.Thread(
-            target=self.monitor_branches,
-            daemon=True,
-        )
-        self._monitor_thread.start()
 
     @property
     def repo(self) -> Repo | None:
@@ -194,7 +188,7 @@ class BranchTracker:
         except (GitError, OSError) as e:
             print(f"{self.logging_prefix} Error during reset: {e}")
 
-        if not self._monitor_thread.is_alive():
+        if self._monitor_thread is None or not self._monitor_thread.is_alive():
             self._monitor_thread = threading.Thread(
                 target=self.monitor_branches,
                 daemon=True,
