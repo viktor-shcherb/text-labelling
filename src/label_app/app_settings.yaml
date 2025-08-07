@@ -1,7 +1,8 @@
 admin_email: viktoroo.sch@gmail.com
 
 projects:
-  llm-copyright: https://github.com/cpeukert/llm-copyright/tree/main/data
+  copyright-substitution-risk: https://github.com/cpeukert/llm-copyright/tree/main/data/copyright-substitution-risk
+  ai-task-classification: https://github.com/cpeukert/llm-copyright/tree/main/data/ai-task-classification
 
 #projects:
 #  test: https://github.com/viktor-shcherb/test-dataset/tree/master/test_project
