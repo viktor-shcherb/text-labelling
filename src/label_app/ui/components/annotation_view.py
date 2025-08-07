@@ -3,7 +3,7 @@ from __future__ import annotations
 import bisect
 import re
 from functools import singledispatch
-from typing import TypeVar, overload, Any
+from typing import TypeVar, overload
 
 import streamlit as st
 

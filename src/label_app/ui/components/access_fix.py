@@ -1,7 +1,7 @@
 import streamlit as st
 
-from label_app.services.git.config import APP_SLUG
-from label_app.services.git.install_link import get_owner_profile, build_install_link_for_many
+from label_app.services.github.config import APP_SLUG
+from label_app.services.github.install_link import get_owner_profile, build_install_link_for_many
 
 
 def _group_all_repos_by_owner(meta_by_slug: dict[str, dict]) -> dict[str, set[str]]:

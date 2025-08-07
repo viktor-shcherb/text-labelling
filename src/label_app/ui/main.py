@@ -2,11 +2,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from label_app.services.git import start_repo_flusher
 from label_app.ui.components.navigation import setup_navigation
-
-
-start_repo_flusher()
 
 
 # make expander text the same size as markdown

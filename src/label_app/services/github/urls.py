@@ -32,10 +32,12 @@ Notes
 
 from __future__ import annotations
 
+from functools import lru_cache
 from urllib.parse import urlparse, unquote
 from typing import Tuple
 
 
+@lru_cache()
 def parse_github_url(raw_url: str) -> Tuple[str, str | None, str]:
     """
     Canonicalize a GitHub URL and return (repo_url, branch, subdir).
