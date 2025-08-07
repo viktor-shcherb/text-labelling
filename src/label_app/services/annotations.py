@@ -11,6 +11,7 @@ from git import Repo
 from pydantic import TypeAdapter, ValidationError
 
 from label_app.data.models import Project, User, ItemBase, AnnotationBase
+from label_app.services.github import get_responsible_tracker
 from label_app.services.items import load_items_by_file
 
 MAX_ERRS_TO_SHOW = 5
@@ -191,15 +192,21 @@ def save_annotations(project: Project, user: User, annotations: Iterable[Annotat
             # Nothing to write or stage for this file
             continue
 
-        # 3) Persist atomically
-        _atomic_write_lines(ann_path, lines)
+        tracker = get_responsible_tracker(ann_path)
+        with tracker.repo_lock:
+            tracker.ensure_staging_branch()
 
-        # 4) Stage the updated file
-        rel = str(ann_path.relative_to(repo.working_dir))
-        repo.index.add([rel])
-        staged_paths.append(rel)
-        files_updated += 1
-        rows_written_total += len(lines)
+            # 3) Persist atomically
+            _atomic_write_lines(ann_path, lines)
+
+            # 4) Stage the updated file
+            rel = str(ann_path.relative_to(repo.working_dir))
+            repo.index.add([rel])
+            staged_paths.append(rel)
+            files_updated += 1
+            rows_written_total += len(lines)
+
+            tracker.auto_commit(force=True)
 
     if not staged_paths:
         return

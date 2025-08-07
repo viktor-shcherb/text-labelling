@@ -22,7 +22,7 @@ POLL_TIMEOUT = 5
 PULL_TIMEOUT = 15 * 60
 PUSH_TIMEOUT = 5 * 60
 AUTO_COMMIT_TIMEOUT = 5 * 60
-TOKEN_REFRESH_TIMEOUT = 45 * 60
+TOKEN_REFRESH_TIMEOUT = 15 * 60
 MERGE_SQUASHED_AFTER_INACTIVE = 1 * 60 * 60
 MAX_CONCURRENCY = 10
 
@@ -168,14 +168,17 @@ class BranchTracker:
             self._last_pull_time = time.time()
 
         with self.repo_lock:
-            if self.is_initialized():
-                self._update()
-            else:
-                self._init()
+            try:
+                if self.is_initialized():
+                    self._update()
+                else:
+                    self._init()
 
-            # clone or pull is successful, repo exists on disk and ready for tracking changes
-            if self.is_initialized():
-                self.ensure_staging_branch()
+                # clone or pull is successful, repo exists on disk and ready for tracking changes
+                if self.is_initialized():
+                    self.ensure_staging_branch()
+            except (GitError, OSError) as e:
+                print(f"{self.logging_prefix} Error during remote sync: {e}")
 
     def reset(self):
         self._token = None
@@ -190,6 +193,13 @@ class BranchTracker:
             self.pull_remote(force=True)
         except (GitError, OSError) as e:
             print(f"{self.logging_prefix} Error during reset: {e}")
+
+        if not self._monitor_thread.is_alive():
+            self._monitor_thread = threading.Thread(
+                target=self.monitor_branches,
+                daemon=True,
+            )
+            self._monitor_thread.start()
 
     def refresh_token(self, force: bool = False) -> None:
         with self._time_lock:
@@ -366,7 +376,7 @@ class BranchTracker:
         branches: list[Literal["tracking", "staging"]] = ["tracking", "staging"]
         while True:
             time.sleep(POLL_TIMEOUT)
-            if not self.is_initialized():
+            if not self.is_initialized() or self._repo_status is not RepoStatus.OK:
                 # periodically poll the remote until access issues are resolved and it is cloned
                 self.pull_remote()
                 continue
@@ -410,7 +420,7 @@ class BranchTracker:
                             # clear push flags so we don't double-push
                             push_needed = dict.fromkeys(branches, False)
                         except Exception as e:
-                            print(f"{self.logging_prefix} sync failed: {e}")
+                            print(f"{self.logging_prefix} staging branch sync failed: {e}")
 
                 # force if we are going to push anything, otherwise just check the timeout
                 self.pull_remote(force=any(push_needed.values()))
