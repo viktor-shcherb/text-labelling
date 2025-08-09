@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import streamlit as st
+import streamlit_hotkeys as hotkeys
 
 from label_app.services.annotations import load_file_annotations, save_annotations
 from label_app.services.items import load_items, load_file_items
@@ -10,6 +11,13 @@ from label_app.services.persistent_state.current_item import get_current_item, s
 from label_app.services.persistent_state.project import get_project_selection
 from label_app.ui.components.annotation_view import render
 from label_app.ui.components.auth import current_user, sidebar_logout
+
+
+with st.sidebar:
+    hotkeys.activate(
+        hotkeys.hk("next", "ArrowRight", help="Next"),
+        hotkeys.hk("prev", "ArrowLeft", help="Previous"),
+    )
 
 print("[render] Annotation")
 sidebar_logout()
@@ -64,6 +72,7 @@ def body():
     with col_header:
         st.header(project.name)
 
+    do_rerun = False
     with controls:
         control_prev, control_next = st.columns(2)
         with control_prev:
@@ -76,6 +85,7 @@ def body():
                 disabled=(current_idx == 0),
                 key="prev_btn"
             )
+            hotkeys.on_pressed("next", callback=progress, args=(1,))
         with control_next:
             st.button(
                 "",
@@ -86,7 +96,7 @@ def body():
                 disabled=(current_idx == len(items) - 1),
                 key="next_btn"
             )
-
+            hotkeys.on_pressed("prev", callback=progress, args=(-1,))
 
     def _on_slider_change():
         # slider_idx is 1-based, your current_idx is 0-based
@@ -94,7 +104,6 @@ def body():
         diff = new_idx - current_idx
         if diff != 0:
             progress(diff)
-
 
     st.slider(
         f"Annotation progress:",
