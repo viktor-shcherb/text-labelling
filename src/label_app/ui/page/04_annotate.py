@@ -31,9 +31,17 @@ if not items:
     st.stop()
 
 
+if "annotation_ph" not in st.session_state:
+    st.session_state.annotation_ph = {}
+    st.session_state.annotation_ph["header"] = st.empty()
+    st.session_state.annotation_ph["slider"] = st.empty()
+    st.session_state.annotation_ph["hotkeys"] = st.empty()
+
+
+
 @st.fragment()
 def body():
-    with st.sidebar:
+    with st.session_state.annotation_ph["hotkeys"]:
         hotkeys.activate(
             hotkeys.hk("next", "ArrowRight", help="Next"),
             hotkeys.hk("prev", "ArrowLeft", help="Previous"),
@@ -67,7 +75,7 @@ def body():
 
     # Page content
 
-    col_header, controls = st.columns([8, 2], vertical_alignment="bottom")
+    col_header, controls = st.session_state.annotation_ph["header"].columns([8, 2], vertical_alignment="bottom")
     with col_header:
         st.header(project.name)
 
@@ -103,7 +111,7 @@ def body():
         if diff != 0:
             progress(diff)
 
-    st.slider(
+    st.session_state.annotation_ph["slider"].slider(
         f"Annotation progress:",
         min_value=1,
         max_value=len(items),
