@@ -31,16 +31,14 @@ if not items:
     st.stop()
 
 
-if "annotation_ph" not in st.session_state:
-    st.session_state.annotation_ph = {}
-    st.session_state.annotation_ph["header"] = st.empty()
-    st.session_state.annotation_ph["slider"] = st.empty()
-    st.session_state.annotation_ph["hotkeys"] = st.empty()
-
-
-
 @st.fragment()
 def body():
+    if "annotation_ph" not in st.session_state:
+        st.session_state.annotation_ph = {}
+        st.session_state.annotation_ph["header"] = st.empty()
+        st.session_state.annotation_ph["slider"] = st.empty()
+        st.session_state.annotation_ph["hotkeys"] = st.empty()
+
     with st.session_state.annotation_ph["hotkeys"]:
         hotkeys.activate(
             hotkeys.hk("next", "ArrowRight", help="Next"),
@@ -71,7 +69,6 @@ def body():
             del st.session_state.cached_annotation
         set_current_item(project, target_idx)
         save_annotations(project, user, [annotation])
-
 
     # Page content
 
