@@ -34,10 +34,11 @@ if not items:
 @st.fragment()
 def body():
     if "annotation_ph" not in st.session_state:
-        st.session_state.annotation_ph = {}
-        st.session_state.annotation_ph["header"] = st.empty()
-        st.session_state.annotation_ph["slider"] = st.empty()
-        st.session_state.annotation_ph["hotkeys"] = st.empty()
+        with st.container(key="annotation_body"):
+            st.session_state.annotation_ph = {}
+            st.session_state.annotation_ph["header"] = st.empty()
+            st.session_state.annotation_ph["slider"] = st.empty()
+            st.session_state.annotation_ph["hotkeys"] = st.empty()
 
     with st.session_state.annotation_ph["hotkeys"]:
         hotkeys.activate(
