@@ -1,6 +1,6 @@
 -e .
 streamlit
-streamlit-hotkeys
+streamlit-hotkeys>=0.6.0
 pydantic[email]
 PyYAML
 PyJWT

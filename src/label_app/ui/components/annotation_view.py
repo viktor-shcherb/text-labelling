@@ -132,7 +132,6 @@ def _fix_annotation(annotation: ChatAnnotation):
 
 
 @render.register
-@st.fragment()
 def _render_chat(project: ChatProject, annotation: ChatAnnotation) -> ChatAnnotation:
     """Display chat messages with annotation controls.
 
@@ -140,7 +139,8 @@ def _render_chat(project: ChatProject, annotation: ChatAnnotation) -> ChatAnnota
     """
     _fix_annotation(annotation)
     for idx, msg in enumerate(annotation.item.conversation):
-        with st.container(border=True, key=f"container-msg-{idx}"):
+        item_desc = f"{annotation.item.key}:{annotation.item.idx}:{idx}"
+        with st.container(border=True, key=f"container-msg-{item_desc}"):
             st.markdown(f"**{msg.role}**")
             content = msg.content
 
@@ -155,17 +155,18 @@ def _render_chat(project: ChatProject, annotation: ChatAnnotation) -> ChatAnnota
                 with st.expander(preview):
                     st.markdown(expanded)
             else:
-                with st.container(border=True):
+                with st.container(border=True, key=f"container-msg-content-{item_desc}"):
                     st.markdown(content)
 
             if msg.role in project.chat_options.annotate_roles:
                 cols = st.columns([1] * len(project.label_groups), gap="large")
 
-                def handle_label_change(id_, slug):
+                def handle_label_change(idx, desc, slug):
                     def callback():
-                        new_val = st.session_state[f"{id_}_{slug}"]
-                        if new_val is not None:
-                            annotation.labels[id_][slug] = new_val if isinstance(new_val, list) else [new_val]
+                        new_val = st.session_state[f"{desc}_{slug}"]
+                        if not new_val:
+                            new_val = []
+                        annotation.labels[idx][slug] = new_val if isinstance(new_val, list) else [new_val]
 
                     return callback
 
@@ -176,8 +177,8 @@ def _render_chat(project: ChatProject, annotation: ChatAnnotation) -> ChatAnnota
                         st.pills(
                             group.title or group_slug, group.labels,
                             selection_mode="single" if group.single_choice else "multi",
-                            key=f"{idx}_{group_slug}",
-                            on_change=handle_label_change(idx, group_slug),
+                            key=f"{item_desc}_{group_slug}",
+                            on_change=handle_label_change(idx, item_desc, group_slug),
                             default=current if current is not None else [],
                             width="content"
                         )

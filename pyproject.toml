@@ -3,7 +3,7 @@ name = "label_app"
 version = "0.0.1"
 dependencies = [
     "streamlit>=1.35",
-    "streamlit-hotkeys",
+    "streamlit-hotkeys>=0.6.0",
     "pydantic[email]",
     "PyYAML",
     "PyJWT",

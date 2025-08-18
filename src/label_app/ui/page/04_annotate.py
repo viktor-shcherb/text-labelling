@@ -33,17 +33,14 @@ if not items:
 
 @st.fragment()
 def body():
-    if "annotation_ph" not in st.session_state:
-        with st.container(key="annotation_body"):
-            st.session_state.annotation_ph = {}
-            st.session_state.annotation_ph["header"] = st.empty()
-            st.session_state.annotation_ph["slider"] = st.empty()
-            st.session_state.annotation_ph["hotkeys"] = st.empty()
+    header_container = st.container(key="header_container")
+    content_container = st.container(key="content_container")
+    hotkeys_container = st.container(key="hotkeys_container")
 
-    with st.session_state.annotation_ph["hotkeys"]:
+    with hotkeys_container:
         hotkeys.activate(
-            hotkeys.hk("next", "ArrowRight", help="Next"),
-            hotkeys.hk("prev", "ArrowLeft", help="Previous"),
+            hotkeys.hk("next", "ArrowRight", help="Next", ignore_repeat=False),
+            hotkeys.hk("prev", "ArrowLeft", help="Previous", ignore_repeat=False),
         )
 
     current_idx = get_current_item(project)
@@ -72,55 +69,58 @@ def body():
         save_annotations(project, user, [annotation])
 
     # Page content
+    with header_container:
+        col_header, controls = st.columns([8, 2], vertical_alignment="bottom")
+        with col_header:
+            st.header(project.name)
 
-    col_header, controls = st.session_state.annotation_ph["header"].columns([8, 2], vertical_alignment="bottom")
-    with col_header:
-        st.header(project.name)
+        with controls:
+            control_prev, control_next = st.columns(2)
+            with control_prev:
+                st.button(
+                    "",
+                    icon=":material/chevron_left:",
+                    on_click=progress,
+                    args=(-1,),
+                    help="Previous",
+                    disabled=(current_idx == 0),
+                    key="prev_btn"
+                )
+                hotkeys.on_pressed("prev", callback=progress, args=(-1,))
+            with control_next:
+                st.button(
+                    "",
+                    icon=":material/chevron_right:",
+                    on_click=progress,
+                    args=(1,),
+                    help="Next",
+                    disabled=(current_idx == len(items) - 1),
+                    key="next_btn"
+                )
+                hotkeys.on_pressed("next", callback=progress, args=(1,))
 
-    with controls:
-        control_prev, control_next = st.columns(2)
-        with control_prev:
-            st.button(
-                "",
-                icon=":material/chevron_left:",
-                on_click=progress,
-                args=(-1,),
-                help="Previous",
-                disabled=(current_idx == 0),
-                key="prev_btn"
-            )
-            hotkeys.on_pressed("prev", callback=progress, args=(-1,))
-        with control_next:
-            st.button(
-                "",
-                icon=":material/chevron_right:",
-                on_click=progress,
-                args=(1,),
-                help="Next",
-                disabled=(current_idx == len(items) - 1),
-                key="next_btn"
-            )
-            hotkeys.on_pressed("next", callback=progress, args=(1,))
+        def _on_slider_change():
+            # slider_idx is 1-based, current_idx is 0-based
+            new_idx = st.session_state.slider_idx - 1
+            diff = new_idx - current_idx
+            if diff != 0:
+                progress(diff)
 
-    def _on_slider_change():
-        # slider_idx is 1-based, current_idx is 0-based
-        new_idx = st.session_state.slider_idx - 1
-        diff = new_idx - current_idx
-        if diff != 0:
-            progress(diff)
+        st.slider(
+            f"Annotation progress:",
+            min_value=1,
+            max_value=len(items),
+            value=current_idx + 1,
+            key="slider_idx",
+            on_change=_on_slider_change,
+            help="Jump to annotation by sliding",
+        )
 
-    st.session_state.annotation_ph["slider"].slider(
-        f"Annotation progress:",
-        min_value=1,
-        max_value=len(items),
-        value=current_idx + 1,
-        key="slider_idx",
-        on_change=_on_slider_change,
-        help="Jump to annotation by sliding",
-    )
+    with content_container:
+        st.session_state.cached_annotation = render(project, annotation)
 
-    st.session_state.cached_annotation = render(project, annotation)
-    save_annotations(project, user, [annotation])
+    with hotkeys_container:
+        save_annotations(project, user, [annotation])
 
 
 body()
