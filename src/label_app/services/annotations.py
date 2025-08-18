@@ -12,7 +12,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from label_app.data.models import Project, User, ItemBase, AnnotationBase
 from label_app.services.github import get_responsible_tracker
-from label_app.services.items import load_items_by_file
+from label_app.services.items import load_items_by_file, load_items, load_file_items
 
 MAX_ERRS_TO_SHOW = 5
 
@@ -82,11 +82,11 @@ _AnnotationType = TypeVar("_AnnotationType", bound=AnnotationBase)
 
 def load_file_annotations(
         annot_cls: Type[_AnnotationType],
-        user: User, rel_path: Path, project_root: Path,
+        user_email: str, rel_path: Path, project_root: Path,
         items: list[ItemBase]
 ) -> list[_AnnotationType]:
 
-    path = _annotation_path_for_key(project_root, user.email, rel_path)
+    path = _annotation_path_for_key(project_root, user_email, rel_path)
     print(f"[annotation] Loading {path}")
     if not path.exists():
         # create filler
@@ -116,6 +116,22 @@ def load_file_annotations(
                 print(f"[load_file_annotations] {path}:{lineno}: {e}")
 
     return annotations
+
+
+def load_per_user_annotations(project: Project) -> dict[str, list[AnnotationBase]]:
+    items = load_items(project)
+    user_emails = [p.name for p in project.project_root.joinpath("annotation").iterdir()]
+
+    annot_cls = project.annotation_model()
+    item_cls = project.item_model()
+
+    result = defaultdict(list)
+    for email in user_emails:
+        for item in items:
+            file_items = load_file_items(item_cls, item.key, project.project_root)
+            annotations = load_file_annotations(annot_cls, email, item.key, project.project_root, file_items)
+            result[email].extend(annotations)
+    return result
 
 
 def save_annotations(project: Project, user: User, annotations: Iterable[AnnotationBase]) -> None:

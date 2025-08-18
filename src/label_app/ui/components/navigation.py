@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit.navigation.page import StreamlitPage
 from streamlit.runtime.scriptrunner_utils.script_run_context import get_script_run_ctx
 from streamlit.source_util import PageInfo
 
@@ -75,6 +76,6 @@ def update_navigation():
     ) for page in get_active_pages()})
 
 
-def setup_navigation() -> st.navigation:
+def setup_navigation() -> StreamlitPage:
     sidebar = is_logged_in()
     return st.navigation(get_active_pages(), position="hidden" if not sidebar else "sidebar", expanded=sidebar)
