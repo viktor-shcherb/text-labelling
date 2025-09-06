@@ -1,10 +1,19 @@
+import os
 import streamlit as st
+from dataclasses import dataclass
+
+
+@dataclass
+class User:
+    email: str
 
 
 def current_user():
     # 1) Auth0 / social
     if st.user.is_logged_in:
         return st.user
+    if "DEPLOYMENT_FOR_USER" in os.environ:
+        return User(email=os.environ["DEPLOYMENT_FOR_USER"])
     return None
 
 
