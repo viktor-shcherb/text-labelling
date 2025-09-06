@@ -11,7 +11,7 @@ from git import GitCommandError, Repo, GitError, Actor
 from .auth import get_installation_token
 from .config import BOT_NAME, BOT_EMAIL
 from .errors import GitHubNotInstalledError, GitHubPermissionError
-from .ops import clone, sync_with_remote, authed_remote, count_commits_between
+from .ops import clone, sync_with_remote, authed_remote, count_commits_between, bot_identity_env
 from .repo_fs import repo_dest
 from .urls import canonical_repo_url, owner_repo_from_url
 
@@ -309,11 +309,12 @@ class BranchTracker:
             # 2) Rebase staging onto tracked (tracked priority on conflict)
             self.repo.git.checkout(self.staging_branch)
             try:
-                self.repo.git.rebase(
-                    self.tracking_branch,
-                    "-s", "recursive",
-                    "-X", "theirs"
-                )
+                with bot_identity_env(self.repo, BOT_NAME, BOT_EMAIL):
+                    self.repo.git.rebase(
+                        self.tracking_branch,
+                        "-s", "recursive",
+                        "-X", "theirs"
+                    )
             except GitCommandError:
                 self.repo.git.rebase("--abort")
                 raise

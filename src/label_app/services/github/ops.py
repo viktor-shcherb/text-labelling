@@ -13,6 +13,7 @@ Public API:
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
 from typing import Iterable
@@ -21,6 +22,17 @@ from urllib.parse import urlparse, urlunparse
 from git import Repo, GitCommandError, Remote
 
 from .urls import canonical_repo_url
+
+
+@contextmanager
+def bot_identity_env(repo, name, email):
+    with repo.git.custom_environment(
+        GIT_AUTHOR_NAME=name,
+        GIT_AUTHOR_EMAIL=email,
+        GIT_COMMITTER_NAME=name,
+        GIT_COMMITTER_EMAIL=email,
+    ):
+        yield
 
 
 def authed_https_for_app(base_https_url: str, token: str) -> str:
